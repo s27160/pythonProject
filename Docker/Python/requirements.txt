@@ -1,0 +1,12 @@
+django>=5.1.8
+djangorestframework
+djangorestframework-simplejwt
+mysqlclient
+beautifulsoup4
+playwright
+celery[redis]
+drf-spectacular
+python-dotenv
+typing-extensions
+httpx
+django-cors-headers

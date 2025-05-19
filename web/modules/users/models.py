@@ -1,0 +1,20 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from typing import Optional, Any
+
+
+class User(AbstractUser):
+    class Meta:
+        db_table = 'users'
+        verbose_name = "Użytkownik"
+        verbose_name_plural = "Użytkownicy"
+
+    def __str__(self) -> str:
+        """Return a string representation of the user."""
+        return self.username
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self.user_hash_key and self.username:
+            import hashlib
+            self.user_hash_key = hashlib.sha256(self.username.encode()).hexdigest()
+        super().save(*args, **kwargs)
