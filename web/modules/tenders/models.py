@@ -62,7 +62,6 @@ class PublicTender(models.Model):
         auto_now=True, 
         verbose_name="Data ostatniej aktualizacji"
     )
-    # New fields from API
     client_type: models.CharField = models.CharField(
         max_length=50, 
         verbose_name="Typ klienta",
