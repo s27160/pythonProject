@@ -3,7 +3,7 @@ djangorestframework
 djangorestframework-simplejwt
 mysqlclient
 beautifulsoup4
-playwright
+requests
 celery[redis]
 drf-spectacular
 python-dotenv

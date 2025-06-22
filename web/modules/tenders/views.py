@@ -7,9 +7,9 @@ from django.db.models import Q
 from typing import Any, Dict, List, Optional, Type, Union
 from .models import PublicTender, FollowPublicTender, PrivateTender, TenderNote
 from .serializers import (
-    PublicTenderSerializer, 
-    FollowPublicTenderSerializer, 
-    PrivateTenderSerializer, 
+    PublicTenderSerializer,
+    FollowPublicTenderSerializer,
+    PrivateTenderSerializer,
     TenderNoteSerializer
 )
 
@@ -20,17 +20,11 @@ class TenderViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['tender_id', 'order_name', 'title', 'description', 'contracting_authority', 'company_name']
     ordering_fields = ['publication_date', 'submission_deadline', 'created_at']
     ordering = ['-publication_date']
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self) -> List[Union[PublicTender, PrivateTender]]:
-        user = self.request.user
-
+    def get_queryset(self):
         public_tenders = PublicTender.objects.all()
-
-        private_tenders = PrivateTender.objects.filter(
-            Q(owner=user) | Q(shared_with=user)
-        ).distinct()
-
-        return list(public_tenders) + list(private_tenders)
+        return public_tenders
 
     def get_object(self) -> Union[PublicTender, PrivateTender]:
         uuid = self.kwargs['pk']
@@ -58,55 +52,15 @@ class TenderViewSet(viewsets.ReadOnlyModelViewSet):
                 return PrivateTenderSerializer
         return PublicTenderSerializer
 
-    @action(detail=True, methods=['post'])
-    def observe(self, request: Request, pk: str = None) -> Response:
-        tender = self.get_object()
+    @action(detail=False, methods=['get'])
+    def observed(self, request: Request) -> Response:
         user = request.user
 
-        if not isinstance(tender, PublicTender):
-            return Response(
-                {"detail": "Tylko przetargi publiczne mogą być obserwowane."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        tenders = PublicTender.objects.filter(followers__user=user)
 
-        if FollowPublicTender.objects.filter(tender=tender, user=user).exists():
-            return Response(
-                {"detail": "Już obserwujesz ten przetarg."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = self.get_serializer(tenders, many=True)
 
-        follow = FollowPublicTender(tender=tender, user=user)
-        follow.save()
-
-        return Response(
-            {"detail": "Przetarg został dodany do obserwowanych."},
-            status=status.HTTP_201_CREATED
-        )
-
-    @action(detail=True, methods=['post'])
-    def notes(self, request: Request, pk: str = None) -> Response:
-        tender = self.get_object()
-        user = request.user
-
-        if isinstance(tender, PublicTender):
-            tender_type = 'public'
-        else:
-            tender_type = 'private'
-
-        serializer = TenderNoteSerializer(
-            data={
-                'tender_uuid': tender.uuid,
-                'tender_type': tender_type,
-                'note': request.data.get('note', '')
-            },
-            context={'request': request}
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data)
 
 
 class PrivateTenderViewSet(viewsets.ModelViewSet):
@@ -116,12 +70,13 @@ class PrivateTenderViewSet(viewsets.ModelViewSet):
     search_fields = ['tender_id', 'title', 'description', 'company_name']
     ordering_fields = ['publication_date', 'submission_deadline', 'created_at']
     ordering = ['-publication_date']
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self) -> List[PrivateTender]:
         user = self.request.user
-        return PrivateTender.objects.filter(
+        return list(PrivateTender.objects.filter(
             Q(owner=user) | Q(shared_with=user)
-        ).distinct()
+        ).distinct())
 
     def perform_create(self, serializer: PrivateTenderSerializer) -> None:
         serializer.save(owner=self.request.user)
@@ -130,10 +85,27 @@ class PrivateTenderViewSet(viewsets.ModelViewSet):
 class TenderNoteViewSet(viewsets.ModelViewSet):
     serializer_class = TenderNoteSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['tender_uuid']
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self) -> List[TenderNote]:
+    def get_queryset(self):
         user = self.request.user
         return TenderNote.objects.filter(user=user)
+
+    def perform_create(self, serializer: TenderNoteSerializer) -> None:
+        serializer.save(user=self.request.user)
+
+class FollowPublicTenderViewSet(viewsets.ModelViewSet):
+    serializer_class = FollowPublicTenderSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user__id']
+    http_method_names = ['post', 'delete']
+
+    def get_queryset(self):
+        user = self.request.user
+        return FollowPublicTender.objects.filter(user=user)
 
     def perform_create(self, serializer: TenderNoteSerializer) -> None:
         serializer.save(user=self.request.user)

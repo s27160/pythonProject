@@ -3,12 +3,10 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Use environment variable for SECRET_KEY or fallback to the hardcoded value
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-nlw3-3tn5lwbif2-86pntk0*o-5_2n&g)az=2map*agpkjd%%9')
 
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
@@ -33,11 +31,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
-# Custom user model
 AUTH_USER_MODEL = 'users.User'
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # In production, set to False and use CORS_ALLOWED_ORIGINS
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'web.config.urls'
 
@@ -86,7 +82,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False
+USE_TZ = True
 
 STATIC_URL = '/static/'
 
@@ -110,7 +106,14 @@ REST_FRAMEWORK = {
     },
 }
 
-# JWT settings
+SPECTACULAR_SETTINGS = {
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'TITLE': 'API Dokumentacja',
+    'DESCRIPTION': 'Dokumentacja API',
+    'VERSION': '1.0.0',
+}
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),

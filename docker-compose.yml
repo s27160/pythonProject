@@ -34,12 +34,25 @@ services:
 
   celery:
     build: Docker/Python
-    command: celery -A tenders_service worker --beat --loglevel=info
+    command: celery -A scraper worker --loglevel=info
     volumes:
       - .:/app
     depends_on:
       - redis
       - db
+
+  celery-beat:
+    build: Docker/Python
+    command: celery -A scraper beat --loglevel=info
+    restart: always
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - celery
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PORT=${REDIS_PORT}
 
 volumes:
   db:

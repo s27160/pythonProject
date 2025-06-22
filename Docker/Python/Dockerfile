@@ -19,9 +19,6 @@ RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install playwright
-RUN playwright install chromium --with-deps
-
 COPY requirements.txt /app
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt

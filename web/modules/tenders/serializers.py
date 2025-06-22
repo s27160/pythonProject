@@ -5,24 +5,11 @@ from .models import PublicTender, FollowPublicTender, PrivateTender, TenderNote
 
 User = get_user_model()
 
-
 class PublicTenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = PublicTender
         fields = '__all__'
         read_only_fields = ['id']
-
-class FollowPublicTenderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FollowPublicTender
-        fields = ['tender', 'user', 'followed_at']
-        read_only_fields = ['followed_at']
-
-    def create(self, validated_data: Dict[str, Any]) -> FollowPublicTender:
-        user = self.context['request'].user
-        validated_data['user'] = user
-        return super().create(validated_data)
-
 
 class PrivateTenderSerializer(serializers.ModelSerializer):
     shared_with_usernames = serializers.ListField(
@@ -95,5 +82,36 @@ class TenderNoteSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data: Dict[str, Any]) -> TenderNote:
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+class FollowPublicTenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FollowPublicTender
+        fields = ['id', 'tender_id', 'followed_at', 'user']
+        read_only_fields = ['id', 'user']
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        tender_uuid = attrs.get('tender_id')
+        tender_type = attrs.get('tender_type')
+        user = self.context['request'].user
+
+        try:
+            if tender_type == 'public':
+                tender = PublicTender.objects.get(uuid=tender_uuid)
+            elif tender_type == 'private':
+                tender = PrivateTender.objects.get(uuid=tender_uuid)
+                if tender.owner != user and user not in tender.shared_with.all():
+                    raise serializers.ValidationError(
+                        "Nie masz uprawnień do dodawania notatek do tego przetargu prywatnego."
+                    )
+            else:
+                raise serializers.ValidationError("Nieprawidłowy typ przetargu.")
+        except (PublicTender.DoesNotExist, PrivateTender.DoesNotExist):
+            raise serializers.ValidationError("Przetarg o podanym UUID nie istnieje.")
+
+        return attrs
+
+    def create(self, validated_data: Dict[str, Any]) -> FollowPublicTender:
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)

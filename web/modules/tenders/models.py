@@ -105,7 +105,7 @@ class PublicTender(models.Model):
         blank=True
     )
     cpv_code: models.CharField = models.CharField(
-        max_length=255, 
+        max_length=1024,
         verbose_name="Kod CPV",
         null=True,
         blank=True
@@ -208,6 +208,11 @@ class PublicTender(models.Model):
 
 
 class FollowPublicTender(models.Model):
+    TENDER_TYPE_CHOICES: tuple = (
+        ('private', 'Prywatny'),
+        ('public', 'Publiczny'),
+    )
+
     tender: models.ForeignKey = models.ForeignKey(
         PublicTender, 
         on_delete=models.CASCADE, 
@@ -220,11 +225,10 @@ class FollowPublicTender(models.Model):
         verbose_name="Użytkownik",
         related_name="followed_tenders"
     )
-    user_hash_key: models.CharField = models.CharField(
-        max_length=255, 
-        verbose_name="Klucz użytkownika",
-        blank=True,
-        null=True
+    tender_type: models.CharField = models.CharField(
+        max_length=10,
+        choices=TENDER_TYPE_CHOICES,
+        verbose_name="Typ przetargu"
     )
     followed_at: models.DateTimeField = models.DateTimeField(
         auto_now_add=True, 
@@ -242,8 +246,6 @@ class FollowPublicTender(models.Model):
         return f"{self.user.username} obserwuje {self.tender}"
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        if not self.user_hash_key and self.user.user_hash_key:
-            self.user_hash_key = self.user.user_hash_key
         super().save(*args, **kwargs)
 
 class PrivateTender(models.Model):
@@ -303,12 +305,6 @@ class PrivateTender(models.Model):
         verbose_name="Właściciel",
         related_name="owned_tenders"
     )
-    user_hash_key: models.CharField = models.CharField(
-        max_length=255, 
-        verbose_name="Klucz użytkownika",
-        blank=True,
-        null=True
-    )
     shared_with: models.ManyToManyField = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         verbose_name="Udostępniono dla",
@@ -326,8 +322,6 @@ class PrivateTender(models.Model):
         return f"{self.tender_id} - {self.title[:50]}"
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        if not self.user_hash_key and self.owner.user_hash_key:
-            self.user_hash_key = self.owner.user_hash_key
         super().save(*args, **kwargs)
 
 
@@ -351,12 +345,6 @@ class TenderNote(models.Model):
         verbose_name="Użytkownik",
         related_name="tender_notes"
     )
-    user_hash_key: models.CharField = models.CharField(
-        max_length=255, 
-        verbose_name="Klucz użytkownika",
-        blank=True,
-        null=True
-    )
     note: models.TextField = models.TextField(
         verbose_name="Notatka"
     )
@@ -375,8 +363,6 @@ class TenderNote(models.Model):
         return f"Notatka użytkownika {self.user.username} do przetargu {self.tender_uuid} ({self.tender_type})"
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        if not self.user_hash_key and self.user.user_hash_key:
-            self.user_hash_key = self.user.user_hash_key
         super().save(*args, **kwargs)
 
     @property
