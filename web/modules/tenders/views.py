@@ -19,7 +19,7 @@ from .serializers import (
 class TenderViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['tender_id', 'order_name', 'title', 'description', 'contracting_authority', 'company_name']
+    search_fields = ['order_name', 'description', 'contracting_authority']
     ordering_fields = ['publication_date', 'submission_deadline', 'created_at']
     ordering = ['-publication_date']
     http_method_names = ['get', 'post', 'patch', 'delete']

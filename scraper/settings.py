@@ -2,7 +2,7 @@ CELERY_BROKER_URL = 'redis://:zaq1@WSX@redis:6379/0'
 CELERY_BEAT_SCHEDULE = {
     'run-scraper-every-2-hours': {
         'task': 'scraper.tasks.run_periodic_scraper',
-        'schedule': 60.0,
+        'schedule': 7200.0,
     },
 }
 CELERY_TIMEZONE = 'Europe/Warsaw'
