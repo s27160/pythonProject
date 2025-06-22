@@ -64,6 +64,73 @@ Jest to system zarządzania przetargami, który umożliwia użytkownikom przegl�
 
 Dokumentacja API jest dostępna w Swagger UI pod głównym adresem aplikacji lub pod `/api/doc/`.
 
+### Przykładowe zapytania API
+
+**Listowanie publicznych przetargów**
+Endpoint: `GET /api/public_tenders/`
+Parametry wyszukiwania:
+
+* `search` na polach `order_name`, `description`, `contracting_authority`
+  Parametry sortowania:
+* `ordering` na polach `publication_date`, `submission_deadline`, `created_at`
+
+**Listowanie prywatnych przetargów**
+Endpoint: `GET /api/private_tenders/`
+Parametry wyszukiwania:
+
+* `search` na polach `title`, `description`, `company_name`, `shared_with__username`
+  Parametry sortowania:
+* `ordering` na polach `publication_date`, `submission_deadline`, `created_at`
+
+**Spolszczenia parametrów wyszukiwania i sortowania**
+
+| Endpoint                    | Parametr `search`       | Tłumaczenie                             | Parametr `ordering`   | Tłumaczenie            |
+| --------------------------- | ----------------------- |-----------------------------------------| --------------------- | ---------------------- |
+| `GET /api/public_tenders/`  | `order_name`            | nazwa zamówienia                        | `publication_date`    | data publikacji        |
+|                             | `description`           | opis                                    | `submission_deadline` | termin składania ofert |
+|                             | `contracting_authority` | zamawiający                             | `created_at`          | data utworzenia        |
+| `GET /api/private_tenders/` | `title`                 | tytuł                                   | `publication_date`    | data publikacji        |
+|                             | `description`           | opis                                    | `submission_deadline` | termin składania ofert |
+|                             | `company_name`          | nazwa firmy                             | `created_at`          | data utworzenia        |
+|                             | `shared_with__username` | nazwy użytkownkiów, którym udostępniono |                       |                        |
+
+
+### Przykładowe tworzenie przetargu prywatnego
+
+Endpoint: `POST /api/private_tenders/`
+
+Body (JSON):
+
+```json
+{
+  "title": "Lula",
+  "description": "Pula",
+  "company_name": "PKHSFWF",
+  "city": "Warsaw",
+  "region": "Mazowieckie",
+  "publication_date": "2025-06-22",
+  "submission_deadline": "2025-06-22",
+  "details_url": "https://stackoverflow.com/questions/55465859/drf-how-to-create-a-listserializer-from-an-array-of-serializer",
+  "shared_with_usernames": []
+}
+```
+
+Przykład z użytkownikiem udostępnionym:
+
+```json
+{
+  "title": "Marek",
+  "description": "Jarek",
+  "company_name": "Sp zoo",
+  "city": "Opoczno",
+  "region": "Łódzkie",
+  "publication_date": "2025-02-22",
+  "submission_deadline": "2025-02-22",
+  "details_url": "https://stackoverflow.com/questions/55465859/drf-how-to-create-a-listserializer-from-an-array-of-serializer",
+  "shared_with_usernames": ["user"]
+}
+```
+
 ## Tworzenie i rozwój
 
 ### Struktura projektu
