@@ -13,9 +13,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='FollowPublicTender',
+            name='FollowTender',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('tender_uuid', models.UUIDField(verbose_name='UUID przetargu')),
+                ('tender_type', models.CharField(choices=[('private', 'Prywatny'), ('public', 'Publiczny')], max_length=10, verbose_name='Typ przetargu')),
                 ('followed_at', models.DateTimeField(auto_now_add=True, verbose_name='Data obserwowania')),
             ],
             options={
@@ -29,7 +31,6 @@ class Migration(migrations.Migration):
             name='PrivateTender',
             fields=[
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True, verbose_name='UUID')),
-                ('tender_id', models.CharField(max_length=50, verbose_name='Identyfikator przetargu')),
                 ('title', models.CharField(max_length=255, verbose_name='Tytuł')),
                 ('description', models.TextField(verbose_name='Opis przetargu')),
                 ('company_name', models.CharField(max_length=255, verbose_name='Nazwa firmy')),

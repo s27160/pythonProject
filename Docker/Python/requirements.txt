@@ -1,5 +1,6 @@
 django>=5.1.8
 djangorestframework
+drf-yasg
 djangorestframework-simplejwt
 mysqlclient
 beautifulsoup4

@@ -16,11 +16,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='followpublictender',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='followed_tenders', to=settings.AUTH_USER_MODEL, verbose_name='Użytkownik'),
-        ),
-        migrations.AddField(
             model_name='privatetender',
             name='owner',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owned_tenders', to=settings.AUTH_USER_MODEL, verbose_name='Właściciel'),
@@ -31,17 +26,13 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(blank=True, related_name='shared_tenders', to=settings.AUTH_USER_MODEL, verbose_name='Udostępniono dla'),
         ),
         migrations.AddField(
-            model_name='followpublictender',
-            name='tender',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='followers', to='tenders.publictender', verbose_name='Przetarg'),
-        ),
-        migrations.AddField(
             model_name='tendernote',
             name='user',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tender_notes', to=settings.AUTH_USER_MODEL, verbose_name='Użytkownik'),
         ),
-        migrations.AlterUniqueTogether(
-            name='followpublictender',
-            unique_together={('tender', 'user')},
+        migrations.AddField(
+            model_name='followtender',
+            name='user',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tender_follows', to=settings.AUTH_USER_MODEL, verbose_name='Użytkownik'),
         ),
     ]

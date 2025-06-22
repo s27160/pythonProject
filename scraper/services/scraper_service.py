@@ -1,5 +1,4 @@
 import asyncio
-import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Tuple
 from scraper.operations import RequestsScraper

@@ -7,7 +7,7 @@ from typing import Optional, Any
 class PublicTender(models.Model):
     uuid: models.UUIDField = models.UUIDField(
         primary_key=True, 
-        default=uuid.uuid4, 
+        default=uuid.uuid4,
         editable=False, 
         unique=True,
         verbose_name="UUID"
@@ -207,17 +207,14 @@ class PublicTender(models.Model):
         return f"{self.announcement_number} - {self.order_name[:50]}"
 
 
-class FollowPublicTender(models.Model):
+class FollowTender(models.Model):
     TENDER_TYPE_CHOICES: tuple = (
         ('private', 'Prywatny'),
         ('public', 'Publiczny'),
     )
 
-    tender: models.ForeignKey = models.ForeignKey(
-        PublicTender, 
-        on_delete=models.CASCADE, 
-        verbose_name="Przetarg",
-        related_name="followers"
+    tender_uuid: models.UUIDField = models.UUIDField(
+        verbose_name="UUID przetargu"
     )
     user: models.ForeignKey = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -239,7 +236,6 @@ class FollowPublicTender(models.Model):
         db_table = 'follow_tender'
         verbose_name = "Obserwacja przetargu"
         verbose_name_plural = "Obserwacje przetargów"
-        unique_together = ['tender', 'user']
         ordering = ['-followed_at']
 
     def __str__(self) -> str:
@@ -255,10 +251,6 @@ class PrivateTender(models.Model):
         editable=False, 
         unique=True,
         verbose_name="UUID"
-    )
-    tender_id: models.CharField = models.CharField(
-        max_length=50, 
-        verbose_name="Identyfikator przetargu"
     )
     title: models.CharField = models.CharField(
         max_length=255, 

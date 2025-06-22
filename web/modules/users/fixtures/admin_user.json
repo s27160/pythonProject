@@ -12,5 +12,19 @@
       "date_joined": "2025-05-19T20:27:29+00:00",
       "last_login": "2025-05-19T20:27:29+00:00"
     }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "username": "user",
+      "password": "pbkdf2_sha256$1000000$8yeL0aWk6a3Pcx4IiJzQex$/8RUwEFsddPLhixBYBGlkjuqb3uJTGo9giXV3sauB9A=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "email": "user@example.com",
+      "date_joined": "2025-05-19T20:27:29+00:00",
+      "last_login": "2025-05-19T20:27:29+00:00"
+    }
   }
 ]

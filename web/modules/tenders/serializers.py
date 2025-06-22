@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from typing import Dict, Any, List
 from django.contrib.auth import get_user_model
-from .models import PublicTender, FollowPublicTender, PrivateTender, TenderNote
+from .models import PublicTender, FollowTender, PrivateTender, TenderNote
 
 User = get_user_model()
 
@@ -9,7 +9,7 @@ class PublicTenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = PublicTender
         fields = '__all__'
-        read_only_fields = ['id']
+        read_only_fields = ['uuid']
 
 class PrivateTenderSerializer(serializers.ModelSerializer):
     shared_with_usernames = serializers.ListField(
@@ -21,9 +21,9 @@ class PrivateTenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrivateTender
         fields = [
-            'uuid', 'tender_id', 'title', 'description', 'company_name',
+            'uuid', 'title', 'description', 'company_name',
             'city', 'region', 'publication_date', 'submission_deadline',
-            'details_url', 'created_at', 'updated_at', 'owner', 'shared_with',
+            'details_url', 'created_at', 'updated_at', 'owner',
             'shared_with_usernames'
         ]
         read_only_fields = ['uuid', 'created_at', 'updated_at', 'owner']
@@ -85,14 +85,14 @@ class TenderNoteSerializer(serializers.ModelSerializer):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
 
-class FollowPublicTenderSerializer(serializers.ModelSerializer):
+class FollowTenderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FollowPublicTender
-        fields = ['id', 'tender_id', 'followed_at', 'user']
+        model = FollowTender
+        fields = ['id', 'tender_uuid', 'tender_type', 'followed_at', 'user']
         read_only_fields = ['id', 'user']
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        tender_uuid = attrs.get('tender_id')
+        tender_uuid = attrs.get('tender_uuid')
         tender_type = attrs.get('tender_type')
         user = self.context['request'].user
 
@@ -107,11 +107,15 @@ class FollowPublicTenderSerializer(serializers.ModelSerializer):
                     )
             else:
                 raise serializers.ValidationError("Nieprawidłowy typ przetargu.")
+
+            if FollowTender.objects.filter(user=user, tender_uuid=tender_uuid).exists():
+                raise serializers.ValidationError("Obserwujesz już ten przetarg.")
+
         except (PublicTender.DoesNotExist, PrivateTender.DoesNotExist):
             raise serializers.ValidationError("Przetarg o podanym UUID nie istnieje.")
 
         return attrs
 
-    def create(self, validated_data: Dict[str, Any]) -> FollowPublicTender:
+    def create(self, validated_data: Dict[str, Any]) -> FollowTender:
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
